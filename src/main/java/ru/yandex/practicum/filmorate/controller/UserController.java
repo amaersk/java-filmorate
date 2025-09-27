@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -21,8 +20,7 @@ public class UserController {
     private final AtomicInteger idSequence = new AtomicInteger(0);
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        validateUser(user);
+    public User createUser(@Valid @RequestBody User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -34,19 +32,18 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
-        validateUser(user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+    public User updateUser(@Valid @RequestBody User user) {
         int id = user.getId();
         if (!users.containsKey(id)) {
             log.warn("Попытка обновить несуществующего пользователя id={}", id);
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
-        users.put(id, user);
-        log.info("Обновлён пользователь id={}, login={}", user.getId(), user.getLogin());
-        return user;
+
+        User existingUser = users.get(id);
+        updateUserFields(existingUser, user);
+
+        log.info("Обновлён пользователь id={}, login={}", existingUser.getId(), existingUser.getLogin());
+        return existingUser;
     }
 
     @GetMapping
@@ -54,19 +51,22 @@ public class UserController {
         return new ArrayList<>(users.values());
     }
 
-    private void validateUser(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Валидация пользователя не пройдена: некорректный email='{}'", user.getEmail());
-            throw new ValidationException("Электронная почта должна содержать символ @ и не быть пустой");
+    private void updateUserFields(User existingUser, User newUser) {
+        if (newUser.getEmail() != null && !newUser.getEmail().isBlank()) {
+            existingUser.setEmail(newUser.getEmail());
         }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Валидация пользователя не пройдена: некорректный login='{}'", user.getLogin());
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+        if (newUser.getLogin() != null && !newUser.getLogin().isBlank()) {
+            existingUser.setLogin(newUser.getLogin());
         }
-        LocalDate today = LocalDate.now();
-        if (user.getBirthday() != null && user.getBirthday().isAfter(today)) {
-            log.warn("Валидация пользователя не пройдена: дата рождения {} в будущем", user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
+        if (newUser.getName() != null) {
+            if (newUser.getName().isBlank()) {
+                existingUser.setName(newUser.getLogin());
+            } else {
+                existingUser.setName(newUser.getName());
+            }
+        }
+        if (newUser.getBirthday() != null) {
+            existingUser.setBirthday(newUser.getBirthday());
         }
     }
 }
