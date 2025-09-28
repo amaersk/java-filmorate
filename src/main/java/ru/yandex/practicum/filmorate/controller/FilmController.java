@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validation.CreateGroup;
+import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ public class FilmController {
     private final AtomicInteger idSequence = new AtomicInteger(0);
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
+    public Film addFilm(@Validated(CreateGroup.class) @RequestBody Film film) {
         validateFilmReleaseDate(film);
         int id = idSequence.incrementAndGet();
         film.setId(id);
@@ -34,7 +36,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film film) {
+    public Film updateFilm(@Validated(UpdateGroup.class) @RequestBody Film film) {
         int id = film.getId();
         if (!films.containsKey(id)) {
             log.warn("Попытка обновить несуществующий фильм id={}", id);

@@ -11,8 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -100,6 +99,73 @@ class UserControllerTest {
     void getUsers_returnsArray() throws Exception {
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("PUT /users — 200 при обновлении только с id (остальные поля не обновляются)")
+    void updateUser_onlyId_returnsOk() throws Exception {
+        // Сначала создаем пользователя
+        String createBody = objectMapper.writeValueAsString(Map.of(
+                "email", "original@test.com",
+                "login", "originalLogin",
+                "name", "Original Name",
+                "birthday", LocalDate.of(2000, 1, 1).toString()
+        ));
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk());
+
+        // Теперь обновляем только с id
+        String updateBody = objectMapper.writeValueAsString(Map.of("id", 1));
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.email").value("original@test.com"))
+                .andExpect(jsonPath("$.login").value("originalLogin"))
+                .andExpect(jsonPath("$.name").value("Original Name"));
+    }
+
+    @Test
+    @DisplayName("PUT /users — 200 при обновлении с валидными полями")
+    void updateUser_validFields_returnsOk() throws Exception {
+        // Сначала создаем пользователя
+        String createBody = objectMapper.writeValueAsString(Map.of(
+                "email", "original@test.com",
+                "login", "originalLogin",
+                "name", "Original Name",
+                "birthday", LocalDate.of(2000, 1, 1).toString()
+        ));
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk());
+
+        // Теперь обновляем с новым email
+        String updateBody = objectMapper.writeValueAsString(Map.of(
+                "id", 1,
+                "email", "updated@test.com"
+        ));
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.email").value("updated@test.com"))
+                .andExpect(jsonPath("$.login").value("originalLogin"))
+                .andExpect(jsonPath("$.name").value("Original Name"));
+    }
+
+    @Test
+    @DisplayName("PUT /users — 400 при несуществующем id")
+    void updateUser_nonExistentId_returnsNotFound() throws Exception {
+        String updateBody = objectMapper.writeValueAsString(Map.of("id", 999));
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isNotFound());
     }
 }
 

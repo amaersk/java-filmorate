@@ -11,8 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,6 +116,71 @@ class FilmControllerTest {
     void getFilms_returnsArray() throws Exception {
         mockMvc.perform(get("/films"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("PUT /films — 200 при обновлении только с id (остальные поля не обновляются)")
+    void updateFilm_onlyId_returnsOk() throws Exception {
+        // Сначала создаем фильм
+        String createBody = objectMapper.writeValueAsString(Map.of(
+                "name", "Original Name",
+                "description", "Original Description",
+                "releaseDate", LocalDate.of(2000, 1, 1).toString(),
+                "duration", 100
+        ));
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk());
+
+        // Теперь обновляем только с id
+        String updateBody = objectMapper.writeValueAsString(Map.of("id", 1));
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Original Name"))
+                .andExpect(jsonPath("$.description").value("Original Description"));
+    }
+
+    @Test
+    @DisplayName("PUT /films — 200 при обновлении с валидными полями")
+    void updateFilm_validFields_returnsOk() throws Exception {
+        // Сначала создаем фильм
+        String createBody = objectMapper.writeValueAsString(Map.of(
+                "name", "Original Name",
+                "description", "Original Description",
+                "releaseDate", LocalDate.of(2000, 1, 1).toString(),
+                "duration", 100
+        ));
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk());
+
+        // Теперь обновляем с новым именем
+        String updateBody = objectMapper.writeValueAsString(Map.of(
+                "id", 1,
+                "name", "Updated Name"
+        ));
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.description").value("Original Description"));
+    }
+
+    @Test
+    @DisplayName("PUT /films — 400 при несуществующем id")
+    void updateFilm_nonExistentId_returnsNotFound() throws Exception {
+        String updateBody = objectMapper.writeValueAsString(Map.of("id", 999));
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isNotFound());
     }
 }
 
