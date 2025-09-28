@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmUpdateDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.validation.CreateGroup;
-import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,15 +36,15 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@Validated(UpdateGroup.class) @RequestBody Film film) {
-        int id = film.getId();
+    public Film updateFilm(@RequestBody FilmUpdateDto filmDto) {
+        int id = filmDto.getId();
         if (!films.containsKey(id)) {
             log.warn("Попытка обновить несуществующий фильм id={}", id);
             throw new NotFoundException("Фильм с id=" + id + " не найден");
         }
 
         Film existingFilm = films.get(id);
-        updateFilmFields(existingFilm, film);
+        updateFilmFields(existingFilm, filmDto);
 
         log.info("Обновлён фильм id={}, name={}", existingFilm.getId(), existingFilm.getName());
         return existingFilm;
@@ -62,15 +62,23 @@ public class FilmController {
         }
     }
 
-    private void updateFilmFields(Film existingFilm, Film newFilm) {
+    private void updateFilmFields(Film existingFilm, FilmUpdateDto newFilm) {
         if (newFilm.getName() != null && !newFilm.getName().isBlank()) {
             existingFilm.setName(newFilm.getName());
         }
         if (newFilm.getDescription() != null) {
+            // Валидация длины описания
+            if (newFilm.getDescription().length() > 200) {
+                log.warn("Валидация фильма не пройдена: описание длиннее 200 символов");
+                throw new ValidationException("Максимальная длина описания — 200 символов");
+            }
             existingFilm.setDescription(newFilm.getDescription());
         }
         if (newFilm.getReleaseDate() != null) {
-            validateFilmReleaseDate(newFilm);
+            // Создаем временный объект Film для валидации даты
+            Film tempFilm = new Film();
+            tempFilm.setReleaseDate(newFilm.getReleaseDate());
+            validateFilmReleaseDate(tempFilm);
             existingFilm.setReleaseDate(newFilm.getReleaseDate());
         }
         if (newFilm.getDuration() > 0) {

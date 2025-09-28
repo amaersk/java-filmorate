@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserControllerTest {
 
     @Autowired
@@ -159,7 +161,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /users — 400 при несуществующем id")
+    @DisplayName("PUT /users — 404 при несуществующем id")
     void updateUser_nonExistentId_returnsNotFound() throws Exception {
         String updateBody = objectMapper.writeValueAsString(Map.of("id", 999));
         mockMvc.perform(put("/users")
