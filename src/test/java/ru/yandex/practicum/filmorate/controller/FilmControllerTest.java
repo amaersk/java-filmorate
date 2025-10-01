@@ -160,13 +160,14 @@ class FilmControllerTest {
             res.setDuration(f.getDuration());
             return res;
         });
-        when(filmStorage.update(any(Film.class))).thenReturn(new Film() {{
-            setId(1);
-            setName("Original Name");
-            setDescription("Original Description");
-            setReleaseDate(LocalDate.of(2000, 1, 1));
-            setDuration(100);
-        }});
+        Film film = new Film();
+        film.setId(1);
+        film.setName("Original Name");
+        film.setDescription("Original Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(100);
+
+        when(filmStorage.update(any(Film.class))).thenReturn(film);
         // Сначала создаем фильм
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "name", "Original Name",
@@ -203,13 +204,15 @@ class FilmControllerTest {
             res.setDuration(f.getDuration());
             return res;
         });
-        when(filmStorage.update(any(Film.class))).thenReturn(new Film() {{
-            setId(1);
-            setName("Updated Name");
-            setDescription("Original Description");
-            setReleaseDate(LocalDate.of(2000, 1, 1));
-            setDuration(100);
-        }});
+        Film film = new Film();
+        film.setId(1);
+        film.setName("Updated Name");
+        film.setDescription("Original Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(100);
+
+        when(filmStorage.update(any(Film.class))).thenReturn(film);
+
         // Сначала создаем фильм
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "name", "Original Name",
