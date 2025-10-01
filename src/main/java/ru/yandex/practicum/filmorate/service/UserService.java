@@ -20,11 +20,21 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    // CRUD delegation
-    public User create(User user) { return userStorage.create(user); }
-    public User update(User user) { return userStorage.update(user); }
-    public Collection<User> getAll() { return userStorage.getAll(); }
-    public User getById(int id) { return userStorage.getById(id); }
+    public User create(User user) {
+        return userStorage.create(user);
+    }
+
+    public User update(User user) {
+        return userStorage.update(user);
+    }
+
+    public Collection<User> getAll() {
+        return userStorage.getAll();
+    }
+
+    public User getById(int id) {
+        return userStorage.getById(id);
+    }
 
     // Friends operations
     public void addFriend(int userId, int friendId) {
@@ -46,21 +56,15 @@ public class UserService {
     public Collection<User> getFriends(int userId) {
         User user = userStorage.getById(userId);
         log.debug("Получение списка друзей пользователя {}. Количество={}", userId, user.getFriends().size());
-        return user.getFriends().stream()
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return user.getFriends().stream().map(userStorage::getById).collect(Collectors.toList());
     }
 
     public Collection<User> getCommonFriends(int userId, int otherId) {
         User user = userStorage.getById(userId);
         User other = userStorage.getById(otherId);
-        Set<Integer> common = user.getFriends().stream()
-                .filter(other.getFriends()::contains)
-                .collect(Collectors.toSet());
+        Set<Integer> common = user.getFriends().stream().filter(other.getFriends()::contains).collect(Collectors.toSet());
         log.debug("Общие друзья пользователей {} и {}: {}", userId, otherId, common.size());
-        return common.stream()
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return common.stream().map(userStorage::getById).collect(Collectors.toList());
     }
 }
 

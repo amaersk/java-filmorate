@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
+    // Дополнительная валидация бизнес-правил, чтобы тесты работали с замоканным хранилищем
+    private static final java.time.LocalDate EARLIEST_RELEASE_DATE = java.time.LocalDate.of(1895, 12, 28);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
@@ -25,11 +27,21 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    // CRUD delegation
-    public Film create(Film film) { return filmStorage.create(film); }
-    public Film update(Film film) { return filmStorage.update(film); }
-    public Collection<Film> getAll() { return filmStorage.getAll(); }
-    public Film getById(int id) { return filmStorage.getById(id); }
+    public Film create(Film film) {
+        return filmStorage.create(film);
+    }
+
+    public Film update(Film film) {
+        return filmStorage.update(film);
+    }
+
+    public Collection<Film> getAll() {
+        return filmStorage.getAll();
+    }
+
+    public Film getById(int id) {
+        return filmStorage.getById(id);
+    }
 
     public void addLike(int filmId, int userId) {
         log.debug("Добавление лайка: фильм={}, пользователь={}", filmId, userId);
@@ -53,9 +65,6 @@ public class FilmService {
                 .limit(count)
                 .collect(Collectors.toList());
     }
-
-    // Дополнительная валидация бизнес-правил, чтобы тесты работали с замоканным хранилищем
-    private static final java.time.LocalDate EARLIEST_RELEASE_DATE = java.time.LocalDate.of(1895, 12, 28);
 
     public Film validateAndCreate(Film film) {
         if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
