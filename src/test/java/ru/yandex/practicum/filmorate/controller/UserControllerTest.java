@@ -139,13 +139,15 @@ class UserControllerTest {
             res.setBirthday(u.getBirthday());
             return res;
         });
-        when(userStorage.update(any(User.class))).thenReturn(new User() {{
-            setId(1);
-            setEmail("original@test.com");
-            setLogin("originalLogin");
-            setName("Original Name");
-            setBirthday(LocalDate.of(2000, 1, 1));
-        }});
+        when(userStorage.update(any(User.class))).thenReturn(new User() {
+            {
+                setId(1);
+                setEmail("original@test.com");
+                setLogin("originalLogin");
+                setName("Original Name");
+                setBirthday(LocalDate.of(2000, 1, 1));
+            }
+        });
         // Сначала создаем пользователя
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "email", "original@test.com",
@@ -183,13 +185,15 @@ class UserControllerTest {
             res.setBirthday(u.getBirthday());
             return res;
         });
-        when(userStorage.update(any(User.class))).thenReturn(new User() {{
-            setId(1);
-            setEmail("updated@test.com");
-            setLogin("originalLogin");
-            setName("Original Name");
-            setBirthday(LocalDate.of(2000, 1, 1));
-        }});
+        when(userStorage.update(any(User.class))).thenReturn(new User() {
+            {
+                setId(1);
+                setEmail("updated@test.com");
+                setLogin("originalLogin");
+                setName("Original Name");
+                setBirthday(LocalDate.of(2000, 1, 1));
+            }
+        });
         // Сначала создаем пользователя
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "email", "original@test.com",
