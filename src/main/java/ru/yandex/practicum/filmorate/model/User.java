@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.validation.CreateGroup;
 import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Пользователь.
@@ -29,6 +31,9 @@ public class User {
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем", groups = {CreateGroup.class, UpdateGroup.class})
     private LocalDate birthday;
+
+    // Друзья пользователя: множество id друзей
+    private Set<Integer> friends = new HashSet<>();
 }
 
 
