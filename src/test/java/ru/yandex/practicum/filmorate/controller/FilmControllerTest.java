@@ -214,7 +214,7 @@ class FilmControllerTest {
                 setDuration(100);
             }
         });
-        // Сначала создаем фильм
+        // Сначала создаем фильм.
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "name", "Original Name",
                 "description", "Original Description",
