@@ -32,12 +32,12 @@ public class UserService {
         return userStorage.getAll();
     }
 
-    public User getById(int id) {
+    public User getById(Integer id) {
         return userStorage.getById(id);
     }
 
     // Friends operations
-    public void addFriend(int userId, int friendId) {
+    public void addFriend(Integer userId, Integer friendId) {
         log.debug("Добавление в друзья: пользователь {} -> {}", userId, friendId);
         User user = userStorage.getById(userId);
         User friend = userStorage.getById(friendId);
@@ -45,7 +45,7 @@ public class UserService {
         friend.getFriends().add(userId);
     }
 
-    public void removeFriend(int userId, int friendId) {
+    public void removeFriend(Integer userId, Integer friendId) {
         log.debug("Удаление из друзей: пользователь {} -/-> {}", userId, friendId);
         User user = userStorage.getById(userId);
         User friend = userStorage.getById(friendId);
@@ -53,13 +53,13 @@ public class UserService {
         friend.getFriends().remove(userId);
     }
 
-    public Collection<User> getFriends(int userId) {
+    public Collection<User> getFriends(Integer userId) {
         User user = userStorage.getById(userId);
         log.debug("Получение списка друзей пользователя {}. Количество={}", userId, user.getFriends().size());
         return user.getFriends().stream().map(userStorage::getById).collect(Collectors.toList());
     }
 
-    public Collection<User> getCommonFriends(int userId, int otherId) {
+    public Collection<User> getCommonFriends(Integer userId, Integer otherId) {
         User user = userStorage.getById(userId);
         User other = userStorage.getById(otherId);
         Set<Integer> common = user.getFriends().stream().filter(other.getFriends()::contains).collect(Collectors.toSet());

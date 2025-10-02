@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -16,8 +15,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    // Дополнительная валидация бизнес-правил, чтобы тесты работали с замоканным хранилищем
-    private static final java.time.LocalDate EARLIEST_RELEASE_DATE = java.time.LocalDate.of(1895, 12, 28);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
@@ -39,18 +36,18 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film getById(int id) {
+    public Film getById(Integer id) {
         return filmStorage.getById(id);
     }
 
-    public void addLike(int filmId, int userId) {
+    public void addLike(Integer filmId, Integer userId) {
         log.debug("Добавление лайка: фильм={}, пользователь={}", filmId, userId);
         userStorage.getById(userId);
         Film film = filmStorage.getById(filmId);
         film.getLikes().add(userId);
     }
 
-    public void removeLike(int filmId, int userId) {
+    public void removeLike(Integer filmId, Integer userId) {
         log.debug("Удаление лайка: фильм={}, пользователь={}", filmId, userId);
         userStorage.getById(userId);
         Film film = filmStorage.getById(filmId);
@@ -66,15 +63,6 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public Film validateAndCreate(Film film) {
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            throw new ValidationException("Дата релиза не раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() != null && film.getDuration() <= 0) {
-            throw new ValidationException("Продолжительность фильма должна быть положительной");
-        }
-        return create(film);
-    }
 }
 
 

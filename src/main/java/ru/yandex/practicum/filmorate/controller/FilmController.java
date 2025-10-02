@@ -25,16 +25,16 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Validated(CreateGroup.class) @RequestBody Film film) {
-        Film created = filmService.validateAndCreate(film);
-        log.info("Создан фильм id={}, name={}", created.getId(), created.getName());
-        return created;
+        Film createdFilm = filmService.create(film);
+        log.info("Создан фильм id={}, name={}", createdFilm.getId(), createdFilm.getName());
+        return createdFilm;
     }
 
     @PutMapping
     public Film updateFilm(@Validated(UpdateGroup.class) @RequestBody Film film) {
-        Film updated = filmService.update(film);
-        log.info("Обновлён фильм id={}, name={}", updated.getId(), updated.getName());
-        return updated;
+        Film updatedFilm = filmService.update(film);
+        log.info("Обновлён фильм id={}, name={}", updatedFilm.getId(), updatedFilm.getName());
+        return updatedFilm;
     }
 
     @GetMapping
@@ -43,17 +43,17 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilm(@PathVariable int id) {
+    public Film getFilm(@PathVariable Integer id) {
         return filmService.getById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.removeLike(id, userId);
     }
 
