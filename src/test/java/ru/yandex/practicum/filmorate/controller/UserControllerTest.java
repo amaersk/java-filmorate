@@ -5,19 +5,28 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Import(UserService.class)
 class UserControllerTest {
 
     @Autowired
@@ -25,6 +34,9 @@ class UserControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private UserStorage userStorage;
 
     @Test
     @DisplayName("POST /users — 400 при пустом теле запроса")
@@ -82,6 +94,16 @@ class UserControllerTest {
     @Test
     @DisplayName("POST /users — 200 и name подставляется login, если пусто")
     void createUser_validBoundary_setsNameFromLogin() throws Exception {
+        when(userStorage.create(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            User res = new User();
+            res.setId(1);
+            res.setEmail(u.getEmail());
+            res.setLogin(u.getLogin());
+            res.setName((u.getName() == null || u.getName().isBlank()) ? u.getLogin() : u.getName());
+            res.setBirthday(u.getBirthday());
+            return res;
+        });
         String body = objectMapper.writeValueAsString(Map.of(
                 "email", "a@b.com",
                 "login", "login",
@@ -99,6 +121,7 @@ class UserControllerTest {
     @Test
     @DisplayName("GET /users — 200 и массив (может быть пустым)")
     void getUsers_returnsArray() throws Exception {
+        when(userStorage.getAll()).thenReturn(java.util.List.of());
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk());
     }
@@ -106,6 +129,25 @@ class UserControllerTest {
     @Test
     @DisplayName("PUT /users — 200 при обновлении только с id (остальные поля не обновляются)")
     void updateUser_onlyId_returnsOk() throws Exception {
+        when(userStorage.create(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            User res = new User();
+            res.setId(1);
+            res.setEmail(u.getEmail());
+            res.setLogin(u.getLogin());
+            res.setName(u.getName());
+            res.setBirthday(u.getBirthday());
+            return res;
+        });
+        User user = new User();
+        user.setId(1);
+        user.setEmail("original@test.com");
+        user.setLogin("originalLogin");
+        user.setName("Original Name");
+        user.setBirthday(LocalDate.of(2000, 1, 1));
+
+        when(userStorage.update(any(User.class))).thenReturn(user);
+
         // Сначала создаем пользователя
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "email", "original@test.com",
@@ -133,6 +175,25 @@ class UserControllerTest {
     @Test
     @DisplayName("PUT /users — 200 при обновлении с валидными полями")
     void updateUser_validFields_returnsOk() throws Exception {
+        when(userStorage.create(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            User res = new User();
+            res.setId(1);
+            res.setEmail(u.getEmail());
+            res.setLogin(u.getLogin());
+            res.setName(u.getName());
+            res.setBirthday(u.getBirthday());
+            return res;
+        });
+        User user = new User();
+        user.setId(1);
+        user.setEmail("updated@test.com");
+        user.setLogin("originalLogin");
+        user.setName("Original Name");
+        user.setBirthday(LocalDate.of(2000, 1, 1));
+
+        when(userStorage.update(any(User.class))).thenReturn(user);
+
         // Сначала создаем пользователя
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "email", "original@test.com",
@@ -163,6 +224,7 @@ class UserControllerTest {
     @Test
     @DisplayName("PUT /users — 404 при несуществующем id")
     void updateUser_nonExistentId_returnsNotFound() throws Exception {
+        when(userStorage.update(any(User.class))).thenThrow(new NotFoundException("not found"));
         String updateBody = objectMapper.writeValueAsString(Map.of("id", 999));
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -5,19 +5,29 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FilmController.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Import(FilmService.class)
 class FilmControllerTest {
 
     @Autowired
@@ -25,6 +35,12 @@ class FilmControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private FilmStorage filmStorage;
+
+    @MockBean
+    private UserStorage userStorage;
 
     @Test
     @DisplayName("POST /films — 400 при пустом теле запроса")
@@ -98,6 +114,16 @@ class FilmControllerTest {
     @Test
     @DisplayName("POST /films — 200 при валидных данных на границе (desc=200, date=1895-12-28, duration=1)")
     void addFilm_validBoundary_returnsOkAndEcho() throws Exception {
+        when(filmStorage.create(any(Film.class))).thenAnswer(invocation -> {
+            Film f = invocation.getArgument(0);
+            Film res = new Film();
+            res.setId(1);
+            res.setName(f.getName());
+            res.setDescription(f.getDescription());
+            res.setReleaseDate(f.getReleaseDate());
+            res.setDuration(f.getDuration());
+            return res;
+        });
         String desc200 = "a".repeat(200);
         String body = objectMapper.writeValueAsString(Map.of(
                 "name", "Name",
@@ -116,6 +142,7 @@ class FilmControllerTest {
     @Test
     @DisplayName("GET /films — 200 и массив (может быть пустым)")
     void getFilms_returnsArray() throws Exception {
+        when(filmStorage.getAll()).thenReturn(java.util.List.of());
         mockMvc.perform(get("/films"))
                 .andExpect(status().isOk());
     }
@@ -123,6 +150,24 @@ class FilmControllerTest {
     @Test
     @DisplayName("PUT /films — 200 при обновлении только с id (остальные поля не обновляются)")
     void updateFilm_onlyId_returnsOk() throws Exception {
+        when(filmStorage.create(any(Film.class))).thenAnswer(invocation -> {
+            Film f = invocation.getArgument(0);
+            Film res = new Film();
+            res.setId(1);
+            res.setName(f.getName());
+            res.setDescription(f.getDescription());
+            res.setReleaseDate(f.getReleaseDate());
+            res.setDuration(f.getDuration());
+            return res;
+        });
+        Film film = new Film();
+        film.setId(1);
+        film.setName("Original Name");
+        film.setDescription("Original Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(100);
+
+        when(filmStorage.update(any(Film.class))).thenReturn(film);
         // Сначала создаем фильм
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "name", "Original Name",
@@ -149,6 +194,25 @@ class FilmControllerTest {
     @Test
     @DisplayName("PUT /films — 200 при обновлении с валидными полями")
     void updateFilm_validFields_returnsOk() throws Exception {
+        when(filmStorage.create(any(Film.class))).thenAnswer(invocation -> {
+            Film f = invocation.getArgument(0);
+            Film res = new Film();
+            res.setId(1);
+            res.setName(f.getName());
+            res.setDescription(f.getDescription());
+            res.setReleaseDate(f.getReleaseDate());
+            res.setDuration(f.getDuration());
+            return res;
+        });
+        Film film = new Film();
+        film.setId(1);
+        film.setName("Updated Name");
+        film.setDescription("Original Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(100);
+
+        when(filmStorage.update(any(Film.class))).thenReturn(film);
+
         // Сначала создаем фильм
         String createBody = objectMapper.writeValueAsString(Map.of(
                 "name", "Original Name",
@@ -178,6 +242,7 @@ class FilmControllerTest {
     @Test
     @DisplayName("PUT /films — 404 при несуществующем id")
     void updateFilm_nonExistentId_returnsNotFound() throws Exception {
+        when(filmStorage.update(any(Film.class))).thenThrow(new NotFoundException("not found"));
         String updateBody = objectMapper.writeValueAsString(Map.of("id", 999));
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)

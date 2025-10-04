@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -9,13 +10,16 @@ import ru.yandex.practicum.filmorate.validation.CreateGroup;
 import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Пользователь.
  */
 @Data
 public class User {
-    private int id;
+    @NotNull(groups = {UpdateGroup.class})
+    private Integer id;
 
     @NotBlank(message = "Электронная почта не может быть пустой", groups = {CreateGroup.class})
     @Email(message = "Электронная почта должна содержать символ @ и быть корректной", groups = {CreateGroup.class, UpdateGroup.class})
@@ -29,6 +33,9 @@ public class User {
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем", groups = {CreateGroup.class, UpdateGroup.class})
     private LocalDate birthday;
+
+    // Друзья пользователя: множество id друзей
+    private Set<Integer> friends = new HashSet<>();
 }
 
 
