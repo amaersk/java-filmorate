@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -11,6 +13,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Arrays;
 
 @Service
 @Slf4j
@@ -61,6 +64,32 @@ public class FilmService {
                 .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    // Методы для работы с жанрами
+    public List<Genre> getAllGenres() {
+        return Arrays.asList(Genre.values());
+    }
+
+    public Genre getGenreById(int id) {
+        Genre[] genres = Genre.values();
+        if (id < 1 || id > genres.length) {
+            throw new IllegalArgumentException("Неверный ID жанра: " + id);
+        }
+        return genres[id - 1];
+    }
+
+    // Методы для работы с рейтингом MPA
+    public List<MpaRating> getAllMpaRatings() {
+        return Arrays.asList(MpaRating.values());
+    }
+
+    public MpaRating getMpaRatingById(int id) {
+        MpaRating[] ratings = MpaRating.values();
+        if (id < 1 || id > ratings.length) {
+            throw new IllegalArgumentException("Неверный ID рейтинга MPA: " + id);
+        }
+        return ratings[id - 1];
     }
 
 }
