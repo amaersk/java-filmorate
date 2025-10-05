@@ -136,7 +136,7 @@ class FilmDbStorageTest {
     void testUpdateNonExistentFilm() {
         // Пытаемся обновить несуществующий фильм
         testFilm1.setId(999);
-        
+
         assertThatThrownBy(() -> filmStorage.update(testFilm1))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Фильм с id=999 не найден");
@@ -199,7 +199,7 @@ class FilmDbStorageTest {
         String insertUserSql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(insertUserSql, "user1@test.com", "user1", "Test User 1", "1990-01-01");
         jdbcTemplate.update(insertUserSql, "user2@test.com", "user2", "Test User 2", "1992-05-15");
-        
+
         // Получаем ID созданных пользователей
         String getUserSql = "SELECT id FROM users WHERE login = ?";
         Integer userId1 = jdbcTemplate.queryForObject(getUserSql, Integer.class, "user1");

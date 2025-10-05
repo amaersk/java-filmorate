@@ -51,7 +51,7 @@ class FilmLikesDbStorageTest {
         jdbcTemplate.update(insertUserSql, "user3@test.com", "user3", "Test User 3", "1995-12-10");
         jdbcTemplate.update(insertUserSql, "user4@test.com", "user4", "Test User 4", "1988-03-20");
         jdbcTemplate.update(insertUserSql, "user5@test.com", "user5", "Test User 5", "1993-07-15");
-        
+
         // Получаем ID созданных пользователей
         String getUserSql = "SELECT id FROM users WHERE login = ?";
         userId1 = jdbcTemplate.queryForObject(getUserSql, Integer.class, "user1");
@@ -118,7 +118,7 @@ class FilmLikesDbStorageTest {
         // Пытаемся удалить несуществующий лайк - должно пройти без исключения (идемпотентная операция)
         assertThatCode(() -> likesStorage.removeLike(film1.getId(), userId1))
                 .doesNotThrowAnyException();
-        
+
         // Проверяем, что лайк действительно не существует
         String sql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, film1.getId(), userId1);
@@ -165,7 +165,7 @@ class FilmLikesDbStorageTest {
 
         // Проверяем порядок и количество
         assertThat(popularFilms).hasSize(3);
-        
+
         // Проверяем, что фильмы отсортированы по количеству лайков
         Film[] filmsArray = popularFilms.toArray(new Film[0]);
         assertThat(filmsArray[0].getName()).isEqualTo("Film 1"); // 3 лайка

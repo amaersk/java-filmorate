@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -18,7 +17,6 @@ import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -130,7 +128,7 @@ class UserFriendshipDbStorageTest {
         // Добавляем друзей и подтверждаем дружбу
         friendshipStorage.addFriend(user1.getId(), user2.getId());
         friendshipStorage.confirmFriendship(user1.getId(), user2.getId());
-        
+
         friendshipStorage.addFriend(user1.getId(), user3.getId());
         friendshipStorage.confirmFriendship(user1.getId(), user3.getId());
 
@@ -157,7 +155,7 @@ class UserFriendshipDbStorageTest {
         // Добавляем друзей для user1
         friendshipStorage.addFriend(user1.getId(), user2.getId());
         friendshipStorage.confirmFriendship(user1.getId(), user2.getId());
-        
+
         friendshipStorage.addFriend(user1.getId(), user3.getId());
         friendshipStorage.confirmFriendship(user1.getId(), user3.getId());
 
@@ -221,7 +219,7 @@ class UserFriendshipDbStorageTest {
 
         assertThat(user1Friends).hasSize(1);
         assertThat(user1Friends).extracting(User::getId).contains(user2.getId());
-        
+
         assertThat(user2Friends).hasSize(1);
         assertThat(user2Friends).extracting(User::getId).contains(user1.getId());
     }

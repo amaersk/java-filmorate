@@ -26,7 +26,7 @@ public class UserFriendshipDbStorage {
         // Проверяем, существует ли уже дружба
         String checkSql = "SELECT COUNT(*) FROM user_friends WHERE user_id = ? AND friend_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, userId, friendId);
-        
+
         if (count == null || count == 0) {
             // Дружбы нет, добавляем новую
             String insertSql = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, ?)";
@@ -78,8 +78,8 @@ public class UserFriendshipDbStorage {
      */
     public Collection<User> getFriends(Integer userId) {
         String sql = "SELECT u.* FROM users u " +
-                    "JOIN user_friends uf ON u.id = uf.friend_id " +
-                    "WHERE uf.user_id = ?";
+                "JOIN user_friends uf ON u.id = uf.friend_id " +
+                "WHERE uf.user_id = ?";
 
         return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(), userId);
     }
@@ -89,11 +89,11 @@ public class UserFriendshipDbStorage {
      */
     public Collection<User> getCommonFriends(Integer userId1, Integer userId2) {
         String sql = "SELECT u.* FROM users u " +
-                    "JOIN user_friends uf1 ON u.id = uf1.friend_id " +
-                    "JOIN user_friends uf2 ON u.id = uf2.friend_id " +
-                    "WHERE uf1.user_id = ? AND uf2.user_id = ?";
-        
-        return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(), 
+                "JOIN user_friends uf1 ON u.id = uf1.friend_id " +
+                "JOIN user_friends uf2 ON u.id = uf2.friend_id " +
+                "WHERE uf1.user_id = ? AND uf2.user_id = ?";
+
+        return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(),
                 userId1, userId2);
     }
 
@@ -102,9 +102,9 @@ public class UserFriendshipDbStorage {
      */
     public Collection<User> getFriendRequests(Integer userId) {
         String sql = "SELECT u.* FROM users u " +
-                    "JOIN user_friends uf ON u.id = uf.friend_id " +
-                    "WHERE uf.user_id = ? AND uf.status = ?";
-        
+                "JOIN user_friends uf ON u.id = uf.friend_id " +
+                "WHERE uf.user_id = ? AND uf.status = ?";
+
         return jdbcTemplate.query(sql, new UserDbStorage.UserRowMapper(), userId, FriendshipStatus.UNCONFIRMED.name());
     }
 }

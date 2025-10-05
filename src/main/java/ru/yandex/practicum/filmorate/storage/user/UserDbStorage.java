@@ -53,7 +53,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-        
+
         int rowsAffected = jdbcTemplate.update(sql,
                 user.getEmail(),
                 user.getLogin(),
@@ -72,7 +72,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getById(Integer id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-        
+
         try {
             User user = jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
             loadUserFriends(user);
@@ -86,18 +86,18 @@ public class UserDbStorage implements UserStorage {
     public Collection<User> getAll() {
         String sql = "SELECT * FROM users ORDER BY id";
         Collection<User> users = jdbcTemplate.query(sql, new UserRowMapper());
-        
+
         // Загружаем друзей для каждого пользователя
         for (User user : users) {
             loadUserFriends(user);
         }
-        
+
         return users;
     }
 
     private void loadUserFriends(User user) {
         String sql = "SELECT friend_id, status FROM user_friends WHERE user_id = ?";
-        
+
         jdbcTemplate.query(sql, (rs) -> {
             Integer friendId = rs.getInt("friend_id");
             String statusStr = rs.getString("status");
@@ -117,11 +117,11 @@ public class UserDbStorage implements UserStorage {
             user.setEmail(rs.getString("email"));
             user.setLogin(rs.getString("login"));
             user.setName(rs.getString("name"));
-            
-            LocalDate birthday = rs.getDate("birthday") != null ? 
-                rs.getDate("birthday").toLocalDate() : null;
+
+            LocalDate birthday = rs.getDate("birthday") != null ?
+                    rs.getDate("birthday").toLocalDate() : null;
             user.setBirthday(birthday);
-            
+
             return user;
         }
     }

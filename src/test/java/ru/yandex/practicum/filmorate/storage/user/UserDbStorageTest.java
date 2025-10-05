@@ -108,7 +108,7 @@ class UserDbStorageTest {
     void testUpdateNonExistentUser() {
         // Пытаемся обновить несуществующего пользователя
         testUser1.setId(999);
-        
+
         assertThatThrownBy(() -> userStorage.update(testUser1))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Пользователь с id=999 не найден");
@@ -186,7 +186,7 @@ class UserDbStorageTest {
         // Создаем трех пользователей
         User user1 = userStorage.create(testUser1);
         User user2 = userStorage.create(testUser2);
-        
+
         User user3 = new User();
         user3.setEmail("user3@example.com");
         user3.setLogin("user3");

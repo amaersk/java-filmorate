@@ -26,7 +26,7 @@ public class FilmLikesDbStorage {
         // Проверяем, существует ли уже лайк
         String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
-        
+
         if (count == null || count == 0) {
             // Лайка нет, добавляем новый
             String insertSql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
@@ -42,10 +42,10 @@ public class FilmLikesDbStorage {
      */
     public void removeLike(Integer filmId, Integer userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        
+
         int rowsAffected = jdbcTemplate.update(sql, filmId, userId);
         // Не выбрасываем исключение, если лайка не было - Postman ожидает 200
-        
+
         log.info("Пользователь {} убрал лайк с фильма {} (rowsAffected={})", userId, filmId, rowsAffected);
     }
 
@@ -54,7 +54,7 @@ public class FilmLikesDbStorage {
      */
     public Integer getLikesCount(Integer filmId) {
         String sql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ?";
-        
+
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId);
         return count != null ? count : 0;
     }
@@ -64,29 +64,29 @@ public class FilmLikesDbStorage {
      */
     public Collection<Film> getPopularFilms(Integer limit) {
         String sql = "SELECT f.*, mr.code as mpa_code, mr.description as mpa_description " +
-                    "FROM films f " +
-                    "LEFT JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id " +
-                    "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
-                    "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_rating_id, mr.code, mr.description " +
-                    "ORDER BY COUNT(fl.user_id) DESC, f.id ASC " +
-                    "LIMIT ?";
-        
+                "FROM films f " +
+                "LEFT JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id " +
+                "LEFT JOIN film_likes fl ON f.id = fl.film_id " +
+                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_rating_id, mr.code, mr.description " +
+                "ORDER BY COUNT(fl.user_id) DESC, f.id ASC " +
+                "LIMIT ?";
+
         Collection<Film> films = jdbcTemplate.query(sql, new FilmDbStorage.FilmRowMapper(), limit);
-        
+
         // Загружаем жанры и лайки для каждого фильма
         for (Film film : films) {
             loadFilmGenres(film);
             loadFilmLikes(film);
         }
-        
+
         return films;
     }
 
     private void loadFilmGenres(Film film) {
         String sql = "SELECT g.id, g.name FROM film_genres fg " +
-                    "JOIN genres g ON fg.genre_id = g.id " +
-                    "WHERE fg.film_id = ? ORDER BY g.id";
-        
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id = ? ORDER BY g.id";
+
         jdbcTemplate.query(sql, (rs) -> {
             Genre genre = Genre.values()[rs.getInt("id") - 1];
             if (film.getGenres() == null) {
@@ -98,7 +98,7 @@ public class FilmLikesDbStorage {
 
     private void loadFilmLikes(Film film) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
-        
+
         jdbcTemplate.query(sql, (rs) -> {
             if (film.getLikes() == null) {
                 film.setLikes(new java.util.HashSet<>());
@@ -112,7 +112,7 @@ public class FilmLikesDbStorage {
      */
     public boolean hasUserLikedFilm(Integer filmId, Integer userId) {
         String sql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
-        
+
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId, userId);
         return count != null && count > 0;
     }
