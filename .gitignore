@@ -44,3 +44,12 @@ build/
 
 *.db
 db/*
+
+# Images and binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.pdf
