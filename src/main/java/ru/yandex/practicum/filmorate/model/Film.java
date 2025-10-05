@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.validation.NotBefore;
 import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,4 +36,10 @@ public class Film {
 
     // Лайки фильма: множество id пользователей, поставивших лайк
     private Set<Integer> likes = new HashSet<>();
+
+    // Жанры фильма
+    private List<Genre> genres = new ArrayList<>();
+
+    // Рейтинг MPA
+    private MpaRating mpa;
 }
