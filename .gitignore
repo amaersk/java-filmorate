@@ -46,3 +46,6 @@ build/
 *.mv.db
 *.trace.db
 db/
+
+# Application properties
+application*.properties
