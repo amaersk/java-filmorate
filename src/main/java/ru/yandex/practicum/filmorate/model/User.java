@@ -1,17 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validation.CreateGroup;
 import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Пользователь.
@@ -34,8 +30,8 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем", groups = {CreateGroup.class, UpdateGroup.class})
     private LocalDate birthday;
 
-    // Друзья пользователя: множество id друзей
-    private Set<Integer> friends = new HashSet<>();
+    // Друзья пользователя: Map где ключ - id друга, значение - статус дружбы
+    private Map<Integer, FriendshipStatus> friends = new HashMap<>();
 }
 
 

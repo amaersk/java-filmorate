@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,16 +7,10 @@ import ru.yandex.practicum.filmorate.validation.NotBefore;
 import ru.yandex.practicum.filmorate.validation.UpdateGroup;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-/**
- * Фильм.
- */
 @Data
-public class Film {
+public class FilmRequestDto {
     @NotNull(groups = {UpdateGroup.class})
     private Integer id;
 
@@ -34,12 +28,9 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительной", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer duration;
 
-    // Лайки фильма: множество id пользователей, поставивших лайк
-    private Set<Integer> likes = new HashSet<>();
+    // MPA рейтинг как объект с id и name
+    private MpaDto mpa;
 
-    // Жанры фильма
-    private List<Genre> genres = new ArrayList<>();
-
-    // Рейтинг MPA
-    private MpaRating mpa;
+    // Жанры как список объектов с id и name
+    private List<GenreDto> genres;
 }
