@@ -10,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.dto.FilmRequestDto;
+import ru.yandex.practicum.filmorate.dto.FilmResponseDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -34,6 +36,9 @@ class FilmControllerTest {
 
     @MockBean
     private FilmService filmService;
+
+    @MockBean
+    private FilmMapper filmMapper;
 
     @Test
     @DisplayName("POST /films — 400 при пустом теле запроса")
@@ -121,6 +126,27 @@ class FilmControllerTest {
             res.setDuration(f.getDuration());
             return res;
         });
+
+        when(filmMapper.toFilm(any(FilmRequestDto.class))).thenAnswer(invocation -> {
+            FilmRequestDto dto = invocation.getArgument(0);
+            Film film = new Film();
+            film.setName(dto.getName());
+            film.setDescription(dto.getDescription());
+            film.setReleaseDate(dto.getReleaseDate());
+            film.setDuration(dto.getDuration());
+            return film;
+        });
+
+        when(filmMapper.toFilmResponseDto(any(Film.class))).thenAnswer(invocation -> {
+            Film film = invocation.getArgument(0);
+            FilmResponseDto dto = new FilmResponseDto();
+            dto.setId(film.getId());
+            dto.setName(film.getName());
+            dto.setDescription(film.getDescription());
+            dto.setReleaseDate(film.getReleaseDate());
+            dto.setDuration(film.getDuration());
+            return dto;
+        });
         String desc200 = "a".repeat(200);
         FilmRequestDto filmDto = new FilmRequestDto();
         filmDto.setName("Name");
@@ -157,6 +183,28 @@ class FilmControllerTest {
             res.setReleaseDate(f.getReleaseDate());
             res.setDuration(f.getDuration());
             return res;
+        });
+
+        when(filmMapper.toFilm(any(FilmRequestDto.class))).thenAnswer(invocation -> {
+            FilmRequestDto dto = invocation.getArgument(0);
+            Film film = new Film();
+            film.setId(dto.getId());
+            film.setName(dto.getName());
+            film.setDescription(dto.getDescription());
+            film.setReleaseDate(dto.getReleaseDate());
+            film.setDuration(dto.getDuration());
+            return film;
+        });
+
+        when(filmMapper.toFilmResponseDto(any(Film.class))).thenAnswer(invocation -> {
+            Film film = invocation.getArgument(0);
+            FilmResponseDto dto = new FilmResponseDto();
+            dto.setId(film.getId());
+            dto.setName(film.getName());
+            dto.setDescription(film.getDescription());
+            dto.setReleaseDate(film.getReleaseDate());
+            dto.setDuration(film.getDuration());
+            return dto;
         });
         Film film = new Film();
         film.setId(1);
@@ -206,6 +254,28 @@ class FilmControllerTest {
             res.setDuration(f.getDuration());
             return res;
         });
+
+        when(filmMapper.toFilm(any(FilmRequestDto.class))).thenAnswer(invocation -> {
+            FilmRequestDto dto = invocation.getArgument(0);
+            Film film = new Film();
+            film.setId(dto.getId());
+            film.setName(dto.getName());
+            film.setDescription(dto.getDescription());
+            film.setReleaseDate(dto.getReleaseDate());
+            film.setDuration(dto.getDuration());
+            return film;
+        });
+
+        when(filmMapper.toFilmResponseDto(any(Film.class))).thenAnswer(invocation -> {
+            Film film = invocation.getArgument(0);
+            FilmResponseDto dto = new FilmResponseDto();
+            dto.setId(film.getId());
+            dto.setName(film.getName());
+            dto.setDescription(film.getDescription());
+            dto.setReleaseDate(film.getReleaseDate());
+            dto.setDuration(film.getDuration());
+            return dto;
+        });
         Film film = new Film();
         film.setId(1);
         film.setName("Updated Name");
@@ -247,6 +317,17 @@ class FilmControllerTest {
     @DisplayName("PUT /films — 404 при несуществующем id")
     void updateFilm_nonExistentId_returnsNotFound() throws Exception {
         when(filmService.update(any(Film.class))).thenThrow(new NotFoundException("not found"));
+
+        when(filmMapper.toFilm(any(FilmRequestDto.class))).thenAnswer(invocation -> {
+            FilmRequestDto dto = invocation.getArgument(0);
+            Film film = new Film();
+            film.setId(dto.getId());
+            film.setName(dto.getName());
+            film.setDescription(dto.getDescription());
+            film.setReleaseDate(dto.getReleaseDate());
+            film.setDuration(dto.getDuration());
+            return film;
+        });
         FilmRequestDto updateDto = new FilmRequestDto();
         updateDto.setId(999);
 

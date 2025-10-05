@@ -15,8 +15,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
 
 @Component
 @Qualifier("filmDbStorage")
@@ -101,10 +105,10 @@ public class FilmDbStorage implements FilmStorage {
 
         Collection<Film> films = jdbcTemplate.query(sql, new FilmRowMapper());
 
-        // Загружаем жанры и лайки для каждого фильма
-        for (Film film : films) {
-            loadFilmGenres(film);
-            loadFilmLikes(film);
+        // Загружаем жанры и лайки для всех фильмов одним запросом
+        if (!films.isEmpty()) {
+            loadFilmGenresBatch(films);
+            loadFilmLikesBatch(films);
         }
 
         return films;
@@ -152,6 +156,56 @@ public class FilmDbStorage implements FilmStorage {
             }
             film.getLikes().add(rs.getInt("user_id"));
         }, film.getId());
+    }
+
+    /**
+     * Оптимизированная загрузка жанров для множества фильмов одним запросом
+     */
+    private void loadFilmGenresBatch(Collection<Film> films) {
+        if (films.isEmpty()) {
+            return;
+        }
+
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        final String sqlQuery = "SELECT fg.film_id, g.id, g.name FROM film_genres fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id IN (" + inSql + ") ORDER BY fg.film_id, g.id";
+
+        jdbcTemplate.query(sqlQuery, (rs) -> {
+            final Film film = filmById.get(rs.getInt("film_id"));
+            if (film != null) {
+                Genre genre = Genre.values()[rs.getInt("id") - 1];
+                if (film.getGenres() == null) {
+                    film.setGenres(new java.util.ArrayList<>());
+                }
+                film.getGenres().add(genre);
+            }
+        }, films.stream().map(Film::getId).toArray());
+    }
+
+    /**
+     * Оптимизированная загрузка лайков для множества фильмов одним запросом
+     */
+    private void loadFilmLikesBatch(Collection<Film> films) {
+        if (films.isEmpty()) {
+            return;
+        }
+
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, identity()));
+        final String sqlQuery = "SELECT film_id, user_id FROM film_likes " +
+                "WHERE film_id IN (" + inSql + ") ORDER BY film_id";
+
+        jdbcTemplate.query(sqlQuery, (rs) -> {
+            final Film film = filmById.get(rs.getInt("film_id"));
+            if (film != null) {
+                if (film.getLikes() == null) {
+                    film.setLikes(new java.util.HashSet<>());
+                }
+                film.getLikes().add(rs.getInt("user_id"));
+            }
+        }, films.stream().map(Film::getId).toArray());
     }
 
     public static class FilmRowMapper implements RowMapper<Film> {
